@@ -1,0 +1,25 @@
+<html>
+
+<head>
+    <title>test</title>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="static/jquery.Jcrop.js"></script>
+    <script src="static/main.js"></script>
+    <link rel="stylesheet" href="static/jquery.Jcrop.min.css" type="text/css" />
+</head>
+
+<body>
+
+<img src="static/cage.jpg" id="crop_target" />
+
+<form action="crop/" id="mainForm" method="POST">
+    <input id="x1" type="hidden" name="x1" value="" />
+    <input id="y1" type="hidden" name="y1" value="" />
+    <input id="x2" type="hidden" name="x2" value="" />
+    <input id="y2" type="hidden" name="y2" value="" />
+    <input type="submit" name="Make Images" />
+</form>
+
+</body>
+
+</html>
