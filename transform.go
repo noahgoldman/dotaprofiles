@@ -57,7 +57,6 @@ func spaceHeight(rect *image.Rectangle) int {
 }
 
 func aspectRatio(rect *image.Rectangle) float64 {
-	fmt.Printf("%#v", rect)
 	return float64(rect.Dx()) / float64(rect.Dy())
 }
 

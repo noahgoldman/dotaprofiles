@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"github.com/fzzy/radix/redis"
 )
 
 type PictureSet struct  {
@@ -36,10 +37,14 @@ func getPictureSet(id int) *PictureSet {
 	return &PictureSet{id, original, set}
 }
 
-func newPictureSet(file string) *PictureSet {
-	id, err := Db.Cmd("get", "next_id").Int()
-	if err != nil {
-		log.Fatal(err)
+func newPictureSet(file string) (*PictureSet, error) {
+	r := Db.Cmd("get", "next_id")
+	id, err := r.Int()
+	if r.Type == redis.NilReply {
+		r = Db.Cmd("set", "next_id", 0)
+		id = 0
+	} else if r.Type == redis.ErrorReply {
+		log.Fatal("database conn failed")
 	}
 
 	exists, err := Db.Cmd("exists", id).Bool()
@@ -47,10 +52,14 @@ func newPictureSet(file string) *PictureSet {
 		log.Fatal(err)
 	}
 
-	llen, err := Db.Cmd("lpush", file).Int()
-	if llen != 1 {
+	llen, err := Db.Cmd("lpush", id, file).Int()
+	if err != nil {
+		log.Fatal(err)
+	} else if llen != 1 {
 		panic("list length should not have changed...")
 	}
+
+	return &PictureSet{id, file, nil}, nil
 }
 
 func (ps *PictureSet) makeSet(set []string) error {
@@ -62,10 +71,12 @@ func (ps *PictureSet) makeSet(set []string) error {
 	}
 
 	Db.Cmd("ltrim", 0, 0)
-	llen, err = Db.Cmd("rpush", set)
+	llen, err = Db.Cmd("rpush", set).Int()
 	if err != nil {
 		log.Fatal(err)
 	} else if llen != 6 {
 		log.Fatal("List length error while commiting")
 	}
+
+	return nil
 }
