@@ -4,10 +4,10 @@ import (
 	"log"
 )
 
-type PictureSet struct  {
-	id int
+type PictureSet struct {
+	id       int
 	original string
-	set []string
+	set      []string
 }
 
 func getPictureSet(id int) *PictureSet {
@@ -27,12 +27,12 @@ func getPictureSet(id int) *PictureSet {
 	// The number of elements when the set has been created is 6
 	if llen == 6 {
 		set, err = Db.Cmd("lrange", id, 1, 5).List()
-		
+
 		if err != nil {
 			log.Fatal(err)
 		}
 	}
-	
+
 	return &PictureSet{id, original, set}
 }
 
@@ -51,6 +51,8 @@ func newPictureSet(file string) *PictureSet {
 	if llen != 1 {
 		panic("list length should not have changed...")
 	}
+
+	return &PictureSet{id, file, nil}
 }
 
 func (ps *PictureSet) makeSet(set []string) error {
@@ -62,10 +64,12 @@ func (ps *PictureSet) makeSet(set []string) error {
 	}
 
 	Db.Cmd("ltrim", 0, 0)
-	llen, err = Db.Cmd("rpush", set)
+	llen, err = Db.Cmd("rpush", set).Int()
 	if err != nil {
 		log.Fatal(err)
 	} else if llen != 6 {
 		log.Fatal("List length error while commiting")
 	}
+
+	return nil
 }
