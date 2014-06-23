@@ -1,12 +1,12 @@
 package main
 
 import (
-	"github.com/fzzy/radix/redis"
 	"fmt"
+	"github.com/fzzy/radix/redis"
 )
 
 const (
-	NETWORK = "tcp"
+	NETWORK    = "tcp"
 	REDIS_ADDR = "localhost:6379"
 )
 

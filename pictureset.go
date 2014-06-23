@@ -5,10 +5,10 @@ import (
 	"github.com/fzzy/radix/redis"
 )
 
-type PictureSet struct  {
-	id int
+type PictureSet struct {
+	id       int
 	original string
-	set []string
+	set      []string
 }
 
 func getPictureSet(id int) *PictureSet {
@@ -28,12 +28,12 @@ func getPictureSet(id int) *PictureSet {
 	// The number of elements when the set has been created is 6
 	if llen == 6 {
 		set, err = Db.Cmd("lrange", id, 1, 5).List()
-		
+
 		if err != nil {
 			log.Fatal(err)
 		}
 	}
-	
+
 	return &PictureSet{id, original, set}
 }
 
