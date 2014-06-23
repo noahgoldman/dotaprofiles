@@ -48,3 +48,22 @@ func TestNewPictureSet(t *testing.T) {
 		fmt.Errorf("The file name should be %s not %s", file, str)
 	}	
 }
+
+func TestGetPictureSet(t *testing.T) {
+	server := setupDB()
+	defer server.Term()
+	defer Db.Close()
+
+	id = 1
+	file = "test.jpg"
+
+	llen, err := Db.Cmd("lpush", id, file).Int()
+	if llen != 1 {
+		fmt.Errof("Somehow the database operation didnt work, len should be 1 not %d", llen)
+	}
+
+	ps, err := getPictureSet(id)
+	if ps.original != file {
+		fmt.Errof("Get picture original should be %s not %s", file, ps.original)
+	}
+}
