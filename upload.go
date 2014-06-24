@@ -54,5 +54,6 @@ func Upload_S3(file string, new_name string) error {
 		return err
 	}
 
+	fmt.Println("%#v", data)
 	return err
 }

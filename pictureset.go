@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"github.com/fzzy/radix/redis"
+	"fmt"
 )
 
 type PictureSet struct {
@@ -11,17 +12,16 @@ type PictureSet struct {
 	set      []string
 }
 
-func getPictureSet(id int) *PictureSet {
+func getPictureSet(id int) (*PictureSet, error){
 
 	original, err := Db.Cmd("lindex", id, "0").Str()
-
 	if err != nil {
-		log.Fatal(err)
+		return nil, fmt.Errorf("Failed to find a PictureSet with id=%d", id)
 	}
 
 	llen, err := Db.Cmd("llen", id).Int()
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
 	var set []string = nil
@@ -34,7 +34,7 @@ func getPictureSet(id int) *PictureSet {
 		}
 	}
 
-	return &PictureSet{id, original, set}
+	return &PictureSet{id, original, set}, nil
 }
 
 func newPictureSet(file string) (*PictureSet, error) {
@@ -62,7 +62,7 @@ func newPictureSet(file string) (*PictureSet, error) {
 	return &PictureSet{id, file, nil}, nil
 }
 
-func (ps *PictureSet) makeSet(set []string) error {
+func (ps *PictureSet) addSet(set []string) error {
 	llen, err := Db.Cmd("llen", ps.id).Int()
 	if err != nil {
 		return err

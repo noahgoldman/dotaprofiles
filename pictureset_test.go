@@ -54,16 +54,16 @@ func TestGetPictureSet(t *testing.T) {
 	defer server.Term()
 	defer Db.Close()
 
-	id = 1
-	file = "test.jpg"
+	id := 1
+	file := "test.jpg"
 
-	llen, err := Db.Cmd("lpush", id, file).Int()
+	llen, _ := Db.Cmd("lpush", id, file).Int()
 	if llen != 1 {
-		fmt.Errof("Somehow the database operation didnt work, len should be 1 not %d", llen)
+		fmt.Errorf("Somehow the database operation didnt work, len should be 1 not %d", llen)
 	}
 
-	ps, err := getPictureSet(id)
+	ps, _ := getPictureSet(id)
 	if ps.original != file {
-		fmt.Errof("Get picture original should be %s not %s", file, ps.original)
+		fmt.Errorf("Get picture original should be %s not %s", file, ps.original)
 	}
 }
