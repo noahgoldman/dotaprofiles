@@ -1,4 +1,4 @@
-package main
+package upload
 
 import (
 	"fmt"
@@ -7,6 +7,7 @@ import (
 	"launchpad.net/goamz/s3"
 	"mime"
 	"path/filepath"
+	"io"
 )
 
 const (
@@ -48,12 +49,17 @@ func Get_New_Name(file string, new_name string) (string, error) {
 	return (new_name + ext), nil
 }
 
-func Upload_S3(file string, new_name string) error {
-	data, err := ioutil.ReadFile(file)
+func Upload_S3(file io.Reader, new_name string) error {
+	data, err := ioutil.ReadAll(file)
 	if err != nil {
 		return err
 	}
 
-	fmt.Println("%#v", data)
+	mime_t, err := Get_Mime(new_name)
+	if err != nil {
+		return err
+	}
+
+	err = bucket.Put(new_name, data, mime_t, s3.BucketOwnerFull)
 	return err
 }
