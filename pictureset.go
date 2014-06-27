@@ -1,8 +1,8 @@
 package main
 
 import (
-	"log"
 	"fmt"
+	"log"
 )
 
 type PictureSet struct {
@@ -11,8 +11,7 @@ type PictureSet struct {
 	set      []string
 }
 
-func getPictureSet(id int) (*PictureSet, error){
-
+func getPictureSet(id int) (*PictureSet, error) {
 	original, err := Db.Cmd("lindex", id, "0").Str()
 	if err != nil {
 		return nil, fmt.Errorf("Failed to find a PictureSet with id=%d", id)
@@ -53,7 +52,7 @@ func newPictureSet(file string) (*PictureSet, error) {
 
 	llen, err := Db.Cmd("lpush", id, filename).Int()
 	if err != nil {
-		return nil, err	
+		return nil, err
 	} else if llen != 1 {
 		panic("list length should not have changed...")
 	}
@@ -61,7 +60,7 @@ func newPictureSet(file string) (*PictureSet, error) {
 	return &PictureSet{id, filename, nil}, nil
 }
 
-func (ps *PictureSet) addSet(set []string) error {
+func (ps *PictureSet) AddSet(set []string) error {
 	llen, err := Db.Cmd("llen", ps.id).Int()
 	if err != nil {
 		return err

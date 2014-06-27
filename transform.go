@@ -1,20 +1,20 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"github.com/disintegration/imaging"
 	"image"
-	"runtime"
-	"io"
 	"image/png"
-	"bytes"
+	"io"
+	"runtime"
 )
 
 const (
 	RATIO = 0.18672199170124
 )
 
-func makeImages(rect *image.Rectangle, file io.Reader) ([]*bytes.Buffer, error) {
+func MakeImages(rect *image.Rectangle, file io.Reader) ([]*bytes.Buffer, error) {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
 	ar := aspectRatio(rect)

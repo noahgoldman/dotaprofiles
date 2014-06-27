@@ -3,11 +3,12 @@ package main
 import (
 	"fmt"
 	"github.com/julienschmidt/httprouter"
-	"html/template"
-	"net/http"
-	"log"
 	"github.com/noahgoldman/dotaprofiles/upload"
+	"html/template"
 	"io"
+	"log"
+	"net/http"
+	"strconv"
 )
 
 func main() {
@@ -17,7 +18,7 @@ func main() {
 	router := httprouter.New()
 	router.GET("/", Index)
 	router.GET("/static/:file", StaticFiles)
-	router.POST("/make_images/:id", CropImage)
+	router.POST("/make_images/:id", MakeImageHandler)
 	router.POST("/upload", Upload)
 
 	http.ListenAndServe(":8080", router)
@@ -32,11 +33,17 @@ func Index(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 }
 
 func StaticFiles(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
-	http.ServeFile(w, r, "static/" + params.ByName("file"))
+	http.ServeFile(w, r, "static/"+params.ByName("file"))
 }
 
-func MakeImages(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
-	ps, err := getPictureSet(params.ByName("id"))		
+func MakeImageHandler(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+	id, err := strconv.Atoi(params.ByName("id"))
+	if err != nil {
+		sendInternalError(w, err)
+		return
+	}
+
+	ps, err := getPictureSet(id)
 	if err != nil {
 		log.Print(err)
 		http.NotFound(w, r)
@@ -46,18 +53,18 @@ func MakeImages(w http.ResponseWriter, r *http.Request, params httprouter.Params
 	r.ParseForm()
 	rect, err := GetRect(r)
 	if err != nil {
-		sendInternalError(err)
+		sendInternalError(w, err)
 		return
 	}
 
-
-	//images, err := makeImages(rect, 
+	file, err := GetImageFile(ps.original, func(s string) (io.Reader, error) { return nil, nil })
+	MakeImages(rect, file)
 
 	fmt.Fprintf(w, "done")
 }
 
 func Upload(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	err := r.ParseMultipartForm(100000000)	
+	err := r.ParseMultipartForm(100000000)
 	if err != nil {
 		panic(err)
 	}
@@ -97,7 +104,7 @@ func Upload(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		return
 	}
 	defer dest.Close()
-	
+
 	// Copy the file to the local image store directory
 	_, err = io.Copy(dest, file)
 	if err != nil {

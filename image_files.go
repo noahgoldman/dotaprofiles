@@ -1,8 +1,9 @@
 package main
 
 import (
-	"path"
+	"io"
 	"os"
+	"path"
 )
 
 const (
@@ -18,6 +19,11 @@ func CreateImageFile(name string) (*os.File, error) {
 }
 
 // Load a file from the directory
-func GetImageFile(name string) (*os.File, error) {
-	return os.Open(GetImgPath(name))
+func GetImageFile(name string, download_file func(string) (io.Reader, error)) (io.Reader, error) {
+	file, err := os.Open(GetImgPath(name))
+	if err == nil {
+		return file, nil
+	}
+
+	return download_file(name)
 }
