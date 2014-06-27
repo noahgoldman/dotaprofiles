@@ -1,3 +1,4 @@
 language: go
 install:
-    go get github.com/stvp/tempredis
+    - go get -d -v ./...
+    - go get github.com/stvp/tempredis
