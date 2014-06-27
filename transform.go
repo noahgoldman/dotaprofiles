@@ -4,40 +4,44 @@ import (
 	"fmt"
 	"github.com/disintegration/imaging"
 	"image"
-	"path/filepath"
 	"runtime"
-	"strconv"
+	"io"
+	"image/png"
+	"bytes"
 )
 
 const (
 	RATIO = 0.18672199170124
 )
 
-func makeImages(rect *image.Rectangle, file string) error {
+func makeImages(rect *image.Rectangle, file io.Reader) ([]*bytes.Buffer, error) {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
 	ar := aspectRatio(rect)
 
 	if ar < RATIO {
-		return fmt.Errorf("makeImages: aspect ratio is too small")
+		return nil, fmt.Errorf("makeImages: aspect ratio is too small")
 	} else if ar > RATIO {
 		cropRatio(rect)
 	}
 
-	img, err := imaging.Open(file)
+	img, _, err := image.Decode(file)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
+	img = imaging.Clone(img)
 
 	top := rect.Min.Y
 	square := squareHeight(rect)
 	space := spaceHeight(rect)
 
+	buffers := make([]*bytes.Buffer, 5, 5)
+
 	for i := 0; i < 5; i++ {
 		new_rect := image.Rect(rect.Min.X, top, rect.Max.X, top+square)
 		new_img := imaging.Crop(img, new_rect)
 
-		err = imaging.Save(new_img, "static/"+filepath.Base(file)+"."+strconv.Itoa(i)+".jpg")
+		err = png.Encode(buffers[i], new_img)
 		if err != nil {
 			panic(err)
 		}
@@ -45,7 +49,7 @@ func makeImages(rect *image.Rectangle, file string) error {
 		top = top + square + space
 	}
 
-	return nil
+	return buffers, nil
 }
 
 func squareHeight(rect *image.Rectangle) int {

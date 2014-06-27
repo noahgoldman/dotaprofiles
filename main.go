@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"log"
 	"github.com/noahgoldman/dotaprofiles/upload"
-	"os"
 	"io"
 )
 
@@ -18,7 +17,7 @@ func main() {
 	router := httprouter.New()
 	router.GET("/", Index)
 	router.GET("/static/:file", StaticFiles)
-	router.POST("/crop/", CropImage)
+	router.POST("/make_images/:id", CropImage)
 	router.POST("/upload", Upload)
 
 	http.ListenAndServe(":8080", router)
@@ -32,18 +31,27 @@ func Index(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	t.Execute(w, nil)
 }
 
-func StaticFiles(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	http.ServeFile(w, r, "static/"+ps.ByName("file"))
+func StaticFiles(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+	http.ServeFile(w, r, "static/" + params.ByName("file"))
 }
 
-func CropImage(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func MakeImages(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+	ps, err := getPictureSet(params.ByName("id"))		
+	if err != nil {
+		log.Print(err)
+		http.NotFound(w, r)
+		return
+	}
+
 	r.ParseForm()
 	rect, err := GetRect(r)
 	if err != nil {
-		fmt.Fprintf(w, "error")
+		sendInternalError(err)
+		return
 	}
 
-	makeImages(rect, "static/cage.jpg")
+
+	//images, err := makeImages(rect, 
 
 	fmt.Fprintf(w, "done")
 }
@@ -58,7 +66,7 @@ func Upload(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 
 	files := m.File["picture"]
 	if len(files) != 1 {
-		SendHTTPError(w, "Only 1 file should ever be uploaded")
+		sendHTTPError(w, "Only 1 file should ever be uploaded")
 		return
 	}
 
@@ -67,13 +75,13 @@ func Upload(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	defer file.Close()
 	if err != nil {
 		err_string := fmt.Sprintf("Failed to open uploaded file %s", files[0].Filename)
-		SendHTTPError(w, err_string)
+		sendHTTPError(w, err_string)
 		return
 	}
 
 	ps, err := newPictureSet(filename)
 	if err != nil {
-		SendInternalError(w, err)
+		sendInternalError(w, err)
 		return
 	}
 	if ps == nil {
@@ -83,9 +91,9 @@ func Upload(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	fmt.Printf("%s", ps.original)
 
 	// Create the local destination file
-	dest, err := os.Create("img_store/" + ps.original)
+	dest, err := CreateImageFile(ps.original)
 	if err != nil {
-		SendInternalError(w, err)
+		sendInternalError(w, err)
 		return
 	}
 	defer dest.Close()
@@ -93,33 +101,33 @@ func Upload(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	// Copy the file to the local image store directory
 	_, err = io.Copy(dest, file)
 	if err != nil {
-		SendInternalError(w, err)
+		sendInternalError(w, err)
 		return
 	}
 
 	// Seek back to the start of the file so that we can read it again
 	_, err = file.Seek(0, 0)
 	if err != nil {
-		SendInternalError(w, err)
+		sendInternalError(w, err)
 		return
 	}
 
 	// Upload the file to Amazon S3
 	err = upload.Upload_S3(file, ps.original)
 	if err != nil {
-		SendInternalError(w, err)
+		sendInternalError(w, err)
 		return
 	}
 
 	fmt.Fprintf(w, "%s", upload.GetURL(ps.original))
 }
 
-func SendHTTPError(w http.ResponseWriter, err_string string) {
+func sendHTTPError(w http.ResponseWriter, err_string string) {
 	log.Print(err_string)
 	http.Error(w, err_string, 500)
 }
 
-func SendInternalError(w http.ResponseWriter, err error) {
+func sendInternalError(w http.ResponseWriter, err error) {
 	log.Print(err)
 	http.Error(w, "Internal server error", 500)
 }

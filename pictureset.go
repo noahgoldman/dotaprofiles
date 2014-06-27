@@ -20,7 +20,7 @@ func getPictureSet(id int) (*PictureSet, error){
 
 	llen, err := Db.Cmd("llen", id).Int()
 	if err != nil {
-		return nil, err
+		return nil, err // TODO figure out a solution for this case
 	}
 
 	var set []string = nil
@@ -29,7 +29,7 @@ func getPictureSet(id int) (*PictureSet, error){
 		set, err = Db.Cmd("lrange", id, 1, 5).List()
 
 		if err != nil {
-			log.Fatal(err)
+			return nil, fmt.Errorf("The pictureset has an incorrect number of elements")
 		}
 	}
 
