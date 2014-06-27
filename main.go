@@ -6,7 +6,7 @@ import (
 	"html/template"
 	"net/http"
 	"log"
-	"github.com/noahgoldman/dotapics/upload"
+	"github.com/noahgoldman/dotaprofiles/upload"
 	"os"
 	"io"
 )

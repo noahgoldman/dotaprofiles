@@ -11,19 +11,20 @@ import (
 )
 
 const (
-	BUCKET_NAME = "dotapics"
+	BUCKET_NAME = "dotaprofiles"
 )
 
 var PicsBucket *s3.Bucket
 
-func AWSInit() {
+func AWSInit() error {
 	auth, err := aws.EnvAuth()
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	s := s3.New(auth, aws.USEast)
 	PicsBucket = s.Bucket(BUCKET_NAME)
+	return nil
 }
 
 func Get_Mime(file string) (string, error) {

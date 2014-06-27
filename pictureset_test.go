@@ -11,7 +11,7 @@ const (
 	TESTING_PORT = "11001"
 )
 
-func setupDB() (*tempredis.Server) {
+func setupDB(t *testing.T) (*tempredis.Server) {
 	server, err := tempredis.Start(
 		tempredis.Config{
 			"port": TESTING_PORT,
@@ -20,7 +20,7 @@ func setupDB() (*tempredis.Server) {
 	)
 
 	if err != nil {
-		panic(err)
+		t.Skip("Failed to connect to redis server, so skipping")
 	}
 	
 	Db, err = redis.Dial(NETWORK, ":" + TESTING_PORT)
@@ -29,7 +29,7 @@ func setupDB() (*tempredis.Server) {
 }
 
 func TestNewPictureSet(t *testing.T) {
-	server := setupDB()
+	server := setupDB(t)
 	defer server.Term()	
 	defer Db.Close()
 
@@ -50,7 +50,7 @@ func TestNewPictureSet(t *testing.T) {
 }
 
 func TestGetPictureSet(t *testing.T) {
-	server := setupDB()
+	server := setupDB(t)
 	defer server.Term()
 	defer Db.Close()
 

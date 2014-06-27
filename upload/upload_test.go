@@ -6,6 +6,7 @@ import (
 	"log"
 	"fmt"
 	"bytes"
+	"os"
 )
 
 const (
@@ -55,6 +56,10 @@ func TestGetNewName(t *testing.T) {
 }
 
 func TestAWSInit(t *testing.T) {
+	if !CheckAWSEnabled() {
+		t.Skip("AWS access credentials not found, so skipping")
+	}
+	
 	AWSInit()
 
 	if PicsBucket == nil {
@@ -72,6 +77,10 @@ func TestUploadFile(t *testing.T) {
 }
 
 func UploadTestFile(t *testing.T) (string) {
+	if !CheckAWSEnabled() {
+		t.Skip("AWS access credentials not found, so skipping")
+	}
+
 	AWSInit()
 
 	data := bytes.NewReader([]byte(TEST_FILE_DATA))
@@ -92,4 +101,8 @@ func GetUUID(t *testing.T) []byte {
 	}
 
 	return uuid
+}
+
+func CheckAWSEnabled() bool {
+	return os.Getenv("AWS_SECRET_ACCESS_KEY") != "" && os.Getenv("AWS_ACCESS_KEY_ID") != ""
 }
