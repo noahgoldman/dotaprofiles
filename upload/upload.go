@@ -14,7 +14,7 @@ const (
 	BUCKET_NAME = "dotapics"
 )
 
-var bucket *s3.Bucket
+var PicsBucket *s3.Bucket
 
 func AWSInit() {
 	auth, err := aws.EnvAuth()
@@ -22,8 +22,8 @@ func AWSInit() {
 		panic(err)
 	}
 
-	s := s3.New(auth, aws.APNortheast)
-	bucket = s.Bucket(BUCKET_NAME)
+	s := s3.New(auth, aws.USEast)
+	PicsBucket = s.Bucket(BUCKET_NAME)
 }
 
 func Get_Mime(file string) (string, error) {
@@ -60,6 +60,6 @@ func Upload_S3(file io.Reader, new_name string) error {
 		return err
 	}
 
-	err = bucket.Put(new_name, data, mime_t, s3.BucketOwnerFull)
+	err = PicsBucket.Put(new_name, data, mime_t, s3.PublicRead)
 	return err
 }

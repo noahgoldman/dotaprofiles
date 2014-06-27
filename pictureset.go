@@ -2,7 +2,6 @@ package main
 
 import (
 	"log"
-	"github.com/fzzy/radix/redis"
 	"fmt"
 )
 
@@ -38,28 +37,28 @@ func getPictureSet(id int) (*PictureSet, error){
 }
 
 func newPictureSet(file string) (*PictureSet, error) {
-	r := Db.Cmd("get", "next_id")
-	id, err := r.Int()
-	if r.Type == redis.NilReply {
-		r = Db.Cmd("set", "next_id", 0)
-		id = 0
-	} else if r.Type == redis.ErrorReply {
-		log.Fatal("database conn failed")
+	id, err := Db.Cmd("incr", "next_id").Int()
+	if err != nil {
+		return nil, err
 	}
 
 	exists, err := Db.Cmd("exists", id).Bool()
-	if exists || err != nil {
-		log.Fatal(err)
+	if err != nil {
+		return nil, err
+	} else if exists {
+		return nil, fmt.Errorf("There is already data in id %d", id)
 	}
 
-	llen, err := Db.Cmd("lpush", id, file).Int()
+	filename := fmt.Sprintf("%d_%s", id, file)
+
+	llen, err := Db.Cmd("lpush", id, filename).Int()
 	if err != nil {
-		log.Fatal(err)
+		return nil, err	
 	} else if llen != 1 {
 		panic("list length should not have changed...")
 	}
 
-	return &PictureSet{id, file, nil}, nil
+	return &PictureSet{id, filename, nil}, nil
 }
 
 func (ps *PictureSet) addSet(set []string) error {

@@ -2,6 +2,14 @@ package upload
 
 import (
 	"testing"
+	"os/exec"
+	"log"
+	"fmt"
+	"bytes"
+)
+
+const (
+	TEST_FILE_DATA = "Test Data?"
 )
 
 func TestGetMime(t *testing.T) {
@@ -44,4 +52,44 @@ func TestGetNewName(t *testing.T) {
 	if err == nil {
 		t.Error("Get_New_Name should've failed")
 	}
+}
+
+func TestAWSInit(t *testing.T) {
+	AWSInit()
+
+	if PicsBucket == nil {
+		t.Errorf("Failed to open AWS bucket %s", BUCKET_NAME)
+	}
+}
+
+func TestUploadFile(t *testing.T) {
+	filename := UploadTestFile(t)
+
+	_, err := PicsBucket.Get(filename)
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+func UploadTestFile(t *testing.T) (string) {
+	AWSInit()
+
+	data := bytes.NewReader([]byte(TEST_FILE_DATA))
+	
+	filename := fmt.Sprintf("testing_%s.jpg", GetUUID(t))
+	err := Upload_S3(data, filename)
+	if err != nil {
+		t.Error(err)
+	}
+
+	return filename
+}
+
+func GetUUID(t *testing.T) []byte {
+	uuid, err := exec.Command("uuidgen").Output()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return uuid
 }
