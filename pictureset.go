@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"path/filepath"
 )
 
 type PictureSet struct {
@@ -60,7 +61,7 @@ func newPictureSet(file string) (*PictureSet, error) {
 	return &PictureSet{id, filename, nil}, nil
 }
 
-func (ps *PictureSet) AddSet(set []string) error {
+func (ps *PictureSet) AddSet() error {
 	llen, err := Db.Cmd("llen", ps.id).Int()
 	if err != nil {
 		return err
@@ -68,8 +69,14 @@ func (ps *PictureSet) AddSet(set []string) error {
 		log.Fatal("list length error")
 	}
 
-	Db.Cmd("ltrim", 0, 0)
-	llen, err = Db.Cmd("rpush", set).Int()
+	ps.set = make([]string, 5, 5)
+	for i := 0; i < 5; i++ {
+		ps.set[i] = fmt.Sprintf("%s_%d%s", GetFilenameWithoutExtension(ps.original),
+							   i+1, filepath.Ext(ps.original))
+	}
+
+	Db.Cmd("ltrim", ps.id, 0, 0)
+	llen, err = Db.Cmd("rpush", ps.id, ps.set).Int()
 	if err != nil {
 		log.Fatal(err)
 	} else if llen != 6 {

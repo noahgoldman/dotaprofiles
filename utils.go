@@ -4,6 +4,8 @@ import (
 	"image"
 	"net/http"
 	"strconv"
+	"strings"
+	"path/filepath"
 )
 
 func GetRect(r *http.Request) (*image.Rectangle, error) {
@@ -21,4 +23,9 @@ func GetRect(r *http.Request) (*image.Rectangle, error) {
 
 	return &image.Rectangle{image.Pt(out_vars[0], out_vars[1]),
 		image.Pt(out_vars[2], out_vars[3])}, nil
+}
+
+func GetFilenameWithoutExtension(path string) string {
+	base := filepath.Base(path)
+	return strings.TrimSuffix(path, filepath.Ext(base))
 }

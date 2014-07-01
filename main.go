@@ -9,11 +9,15 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"encoding/json"
 )
 
 func main() {
 	InitDB()
-	upload.AWSInit()
+	err := upload.AWSInit()
+	if err != nil {
+		panic(err)
+	}
 
 	router := httprouter.New()
 	router.GET("/", Index)
@@ -25,7 +29,7 @@ func main() {
 }
 
 func Index(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	t, err := template.ParseFiles("templates/upload.html")
+	t, err := template.ParseFiles("templates/index.html")
 	if err != nil {
 		panic(err)
 	}
@@ -34,6 +38,14 @@ func Index(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 
 func StaticFiles(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
 	http.ServeFile(w, r, "static/"+params.ByName("file"))
+}
+
+func MakeImagePageHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	t, err := template.ParseFiles("templates/index.html")
+	if err != nil {
+		panic(err)
+	}
+	t.Execute(w, nil)
 }
 
 func MakeImageHandler(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
@@ -57,10 +69,41 @@ func MakeImageHandler(w http.ResponseWriter, r *http.Request, params httprouter.
 		return
 	}
 
-	file, err := GetImageFile(ps.original, func(s string) (io.Reader, error) { return nil, nil })
-	MakeImages(rect, file)
+	file, err := GetImageFile(ps.original, upload.Download_S3)
+	if err != nil {
+		sendInternalError(w, err)
+		return
+	}
 
-	fmt.Fprintf(w, "done")
+	images, err := MakeImages(rect, file)
+	if err != nil {
+		sendInternalError(w, err)
+		return
+	}
+
+	err = ps.AddSet()
+	if err != nil {
+		sendInternalError(w, err)
+		return
+	}
+		
+	urls := make([]string, 5, 5)
+	for i := 0; i < len(images); i++ {
+		err = upload.Upload_S3(images[i], ps.set[i])
+		if err != nil {
+			log.Print(err)
+		}
+		urls[i] = upload.GetURL(ps.set[i])
+	}
+
+	output, err := json.Marshal(urls)
+	if err != nil {
+		sendInternalError(w, err)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	fmt.Fprintf(w, string(output))
 }
 
 func Upload(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
@@ -73,6 +116,7 @@ func Upload(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 
 	files := m.File["picture"]
 	if len(files) != 1 {
+		log.Printf("there are %d files", len(files))
 		sendHTTPError(w, "Only 1 file should ever be uploaded")
 		return
 	}

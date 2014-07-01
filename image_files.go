@@ -4,6 +4,7 @@ import (
 	"io"
 	"os"
 	"path"
+	"bytes"
 )
 
 const (
@@ -19,11 +20,16 @@ func CreateImageFile(name string) (*os.File, error) {
 }
 
 // Load a file from the directory
-func GetImageFile(name string, download_file func(string) (io.Reader, error)) (io.Reader, error) {
+func GetImageFile(name string, download_file func(string) ([]byte, error)) (io.Reader, error) {
 	file, err := os.Open(GetImgPath(name))
 	if err == nil {
 		return file, nil
 	}
 
-	return download_file(name)
+	data, err := download_file(name)
+	if err != nil {
+		return nil, err
+	}	
+
+	return bytes.NewBuffer(data), nil
 }

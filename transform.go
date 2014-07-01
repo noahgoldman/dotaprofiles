@@ -41,6 +41,7 @@ func MakeImages(rect *image.Rectangle, file io.Reader) ([]*bytes.Buffer, error) 
 		new_rect := image.Rect(rect.Min.X, top, rect.Max.X, top+square)
 		new_img := imaging.Crop(img, new_rect)
 
+		buffers[i] = bytes.NewBuffer(make([]byte, 0))
 		err = png.Encode(buffers[i], new_img)
 		if err != nil {
 			panic(err)
