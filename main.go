@@ -22,7 +22,7 @@ func main() {
 	router := httprouter.New()
 	router.GET("/", Index)
 	router.GET("/static/:file", StaticFiles)
-	router.POST("/make_images/:id", MakeImageHandler)
+	router.POST("/make_images", MakeImageHandler)
 	router.POST("/upload", Upload)
 
 	http.ListenAndServe(":8080", router)
@@ -40,16 +40,9 @@ func StaticFiles(w http.ResponseWriter, r *http.Request, params httprouter.Param
 	http.ServeFile(w, r, "static/"+params.ByName("file"))
 }
 
-func MakeImagePageHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	t, err := template.ParseFiles("templates/index.html")
-	if err != nil {
-		panic(err)
-	}
-	t.Execute(w, nil)
-}
-
 func MakeImageHandler(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
-	id, err := strconv.Atoi(params.ByName("id"))
+	r.ParseForm()
+	id, err := strconv.Atoi(r.FormValue("id"))
 	if err != nil {
 		sendInternalError(w, err)
 		return
@@ -62,7 +55,6 @@ func MakeImageHandler(w http.ResponseWriter, r *http.Request, params httprouter.
 		return
 	}
 
-	r.ParseForm()
 	rect, err := GetRect(r)
 	if err != nil {
 		sendInternalError(w, err)
@@ -170,7 +162,9 @@ func Upload(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		return
 	}
 
-	fmt.Fprintf(w, "%s", upload.GetURL(ps.original))
+	// Make the JSON to return
+	w.Header().Set("Content-Type", "application/json")
+	fmt.Fprint(w, JSONResponse{"id": ps.id, "url": upload.GetURL(ps.original)})
 }
 
 func sendHTTPError(w http.ResponseWriter, err_string string) {

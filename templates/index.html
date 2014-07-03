@@ -1,32 +1,78 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
 
 <head>
     <title>test</title>
-    <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
     <script src="/static/jquery.Jcrop.js"></script>
     <script src="/static/main.js"></script>
+    <link rel="stylesheet" href="/static/main.css" type="text/css" />
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
     <link rel="stylesheet" href="/static/jquery.Jcrop.min.css" type="text/css" />
 </head>
 
 <body>
 
-<div id="upload">
-    <form id="upload_form" action="/upload/path" enctype="multipart/form-data">
-        <input type="file" id="original_picture" />
-        <input type="submit" name="submit" value="submit">
-    </form>
-</div>
+<div class="container">
+    <div id="upload">
+        <form id="upload_form" action="/upload/path" enctype="multipart/form-data">
+            <div class="row">
+                <div class="span9 center">
+                    <div class="row">
+                        <span class="btn btn-primary btn-file">
+                            Browse <input type="file" id="original_picture" />
+                        </span>
+                    </div>
+                </div>
 
-<div id="make_images">
-    <img src="/static/cage_1.jpg" id="crop_target" />
+                <div class="row">
+                    <button type="submit" class="btn btn-default">Submit</button>
+                </div>
+            </div>
+        </form>
+    </div>
 
-    <form action="" id="mainForm" method="POST">
-        <input id="x1" type="hidden" name="x1" value="" />
-        <input id="y1" type="hidden" name="y1" value="" />
-        <input id="x2" type="hidden" name="x2" value="" />
-        <input id="y2" type="hidden" name="y2" value="" />
-        <input type="submit" name="Make Images" />
-    </form>
+    <div id="make_images">
+        <img src="/static/cage.jpg" id="crop_target" />
+
+        <form action="" id="crop_form" method="POST">
+            <input id="x1" type="hidden" name="x1" value="" />
+            <input id="y1" type="hidden" name="y1" value="" />
+            <input id="x2" type="hidden" name="x2" value="" />
+            <input id="y2" type="hidden" name="y2" value="" />
+            <input id="ps_id" type="hidden" name="id" value="" />
+            <input type="submit" name="Make Images" />
+        </form>
+    </div>
+
+    <div id="display_images">
+        <div id="row">
+            <img src="/static/cage.jpg" class="output_images" />
+        </div>
+
+        <div id="row">
+            <img src="/static/cage.jpg" class="output_images" />
+        </div>
+
+        <div id="row">
+            <img src="/static/cage.jpg" class="output_images" />
+        </div>
+
+        <div id="row">
+            <img src="/static/cage.jpg" class="output_images" />
+        </div>
+
+        <div id="row">
+            <img src="/static/cage.jpg" class="output_images" />
+        </div>
+
+    </div>
+    </div>
 </div>
 
 </body>

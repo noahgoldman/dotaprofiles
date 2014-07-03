@@ -1,15 +1,17 @@
 $(function() {
   // Hide the other sections
-  $("#upload").show()
   $("#make_images").hide()
+  $("#display_images").hide()
 
-  $('#crop_target').Jcrop({
-    onSelect: setCoords,
-    aspectRatio: 1/5
-  });
-
-  $('#mainForm').submit(function(event) {
+  $('#crop_form').submit(function(event) {
     event.preventDefault();
+
+    $.ajax({
+      type: 'POST',
+      url: '/make_images',
+      data: $(this).serialize(),
+      success: showOutputImages
+    });      
   });
 
   $('#upload_form').submit(function(event) {
@@ -26,9 +28,7 @@ $(function() {
       contentType: false,
       processData: false,
 
-      success: function(data, textStatus, jqXHR) {
-        showCropView(data)
-      },
+      success: showCropView
     });
   });
 });
@@ -40,9 +40,26 @@ function setCoords(c) {
   $('#y2').val(c.y2);
 }
 
-function showCropView(url) {
-  $("#crop_target").attr("src", url).load()
+function showCropView(data, textStatus, jqXHR) {
+  $("#crop_target").attr("src", data.url);
+  $("#ps_id").val(data.id)
 
-  $("#upload").hide()
-  $("#make_images").show()
+  $('#crop_target').Jcrop({
+    onSelect: setCoords,
+    aspectRatio: 1/5
+  });
+
+  $("#upload").hide();
+  $("#make_images").show();
+  $("#display_images").hide();
+}
+
+function showOutputImages(data, textStatus, jqXHR) {
+  $(".output_images").each(function(index, img) {
+    $(img).attr("src", data[index]);
+  });
+
+  $("#upload").hide();
+  $("#make_images").hide();
+  $("#display_images").show();
 }
