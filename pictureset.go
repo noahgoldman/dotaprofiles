@@ -72,7 +72,7 @@ func (ps *PictureSet) AddSet() error {
 	ps.set = make([]string, 5, 5)
 	for i := 0; i < 5; i++ {
 		ps.set[i] = fmt.Sprintf("%s_%d%s", GetFilenameWithoutExtension(ps.original),
-							   i+1, filepath.Ext(ps.original))
+			i+1, filepath.Ext(ps.original))
 	}
 
 	Db.Cmd("ltrim", ps.id, 0, 0)

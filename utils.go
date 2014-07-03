@@ -3,9 +3,9 @@ package main
 import (
 	"image"
 	"net/http"
+	"path/filepath"
 	"strconv"
 	"strings"
-	"path/filepath"
 )
 
 func GetRect(r *http.Request) (*image.Rectangle, error) {

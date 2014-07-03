@@ -2,12 +2,12 @@ package upload
 
 import (
 	"fmt"
+	"io"
 	"io/ioutil"
 	"launchpad.net/goamz/aws"
 	"launchpad.net/goamz/s3"
 	"mime"
 	"path/filepath"
-	"io"
 )
 
 const (

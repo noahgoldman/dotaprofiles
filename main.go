@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/julienschmidt/httprouter"
 	"github.com/noahgoldman/dotaprofiles/upload"
@@ -9,7 +10,6 @@ import (
 	"log"
 	"net/http"
 	"strconv"
-	"encoding/json"
 )
 
 func main() {
@@ -78,7 +78,7 @@ func MakeImageHandler(w http.ResponseWriter, r *http.Request, params httprouter.
 		sendInternalError(w, err)
 		return
 	}
-		
+
 	urls := make([]string, 5, 5)
 	for i := 0; i < len(images); i++ {
 		err = upload.Upload_S3(images[i], ps.set[i])

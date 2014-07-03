@@ -1,9 +1,9 @@
 package upload
 
 import (
-	"testing"
-	"net/http"
 	"io/ioutil"
+	"net/http"
+	"testing"
 )
 
 func TestGetURL(t *testing.T) {

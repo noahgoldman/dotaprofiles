@@ -15,9 +15,9 @@ func StartDispatcher(n int) {
 	go func() {
 		for {
 			select {
-			case work := <- WorkQueue:
+			case work := <-WorkQueue:
 				go func() {
-					worker := <- WorkerQueue
+					worker := <-WorkerQueue
 					worker <- work
 				}()
 			}

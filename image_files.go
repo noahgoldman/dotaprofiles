@@ -1,10 +1,10 @@
 package main
 
 import (
+	"bytes"
 	"io"
 	"os"
 	"path"
-	"bytes"
 )
 
 const (
@@ -29,7 +29,7 @@ func GetImageFile(name string, download_file func(string) ([]byte, error)) (io.R
 	data, err := download_file(name)
 	if err != nil {
 		return nil, err
-	}	
+	}
 
 	return bytes.NewBuffer(data), nil
 }

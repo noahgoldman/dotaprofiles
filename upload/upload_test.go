@@ -1,12 +1,12 @@
 package upload
 
 import (
-	"testing"
-	"os/exec"
-	"log"
-	"fmt"
 	"bytes"
+	"fmt"
+	"log"
 	"os"
+	"os/exec"
+	"testing"
 )
 
 const (
@@ -59,7 +59,7 @@ func TestAWSInit(t *testing.T) {
 	if !CheckAWSEnabled() {
 		t.Skip("AWS access credentials not found, so skipping")
 	}
-	
+
 	AWSInit()
 
 	if PicsBucket == nil {
@@ -76,7 +76,7 @@ func TestUploadFile(t *testing.T) {
 	}
 }
 
-func UploadTestFile(t *testing.T) (string) {
+func UploadTestFile(t *testing.T) string {
 	if !CheckAWSEnabled() {
 		t.Skip("AWS access credentials not found, so skipping")
 	}
@@ -84,7 +84,7 @@ func UploadTestFile(t *testing.T) (string) {
 	AWSInit()
 
 	data := bytes.NewReader([]byte(TEST_FILE_DATA))
-	
+
 	filename := fmt.Sprintf("testing_%s.jpg", GetUUID(t))
 	err := Upload_S3(data, filename)
 	if err != nil {
