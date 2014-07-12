@@ -4,9 +4,9 @@ import (
 	"bytes"
 	"fmt"
 	"log"
-	"os"
 	"os/exec"
 	"testing"
+	"os"
 )
 
 const (
@@ -60,7 +60,7 @@ func TestAWSInit(t *testing.T) {
 		t.Skip("AWS access credentials not found, so skipping")
 	}
 
-	AWSInit()
+	AWSInit("", "")
 
 	if PicsBucket == nil {
 		t.Errorf("Failed to open AWS bucket %s", BUCKET_NAME)
@@ -81,7 +81,7 @@ func UploadTestFile(t *testing.T) string {
 		t.Skip("AWS access credentials not found, so skipping")
 	}
 
-	AWSInit()
+	AWSInit("", "")
 
 	data := bytes.NewReader([]byte(TEST_FILE_DATA))
 

@@ -8,6 +8,7 @@ import (
 	"launchpad.net/goamz/s3"
 	"mime"
 	"path/filepath"
+	"log"
 )
 
 const (
@@ -16,15 +17,20 @@ const (
 
 var PicsBucket *s3.Bucket
 
-func AWSInit() error {
-	auth, err := aws.EnvAuth()
-	if err != nil {
-		return err
+func AWSInit(access_key string, secret_key string) {
+	var auth aws.Auth
+	var err error
+	if access_key != "" && secret_key != "" {
+		auth = aws.Auth{access_key, secret_key}
+	} else {
+		auth, err = aws.EnvAuth()
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 
 	s := s3.New(auth, aws.USEast)
 	PicsBucket = s.Bucket(BUCKET_NAME)
-	return nil
 }
 
 func Get_Mime(file string) (string, error) {

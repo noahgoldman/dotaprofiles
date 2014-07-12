@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/julienschmidt/httprouter"
+	"github.com/noahgoldman/dotaprofiles/config"
 	"github.com/noahgoldman/dotaprofiles/upload"
 	"html/template"
 	"io"
@@ -12,12 +13,14 @@ import (
 	"strconv"
 )
 
+var Config *config.Configuration
+
 func main() {
+	log.Print("starting")
+	Config = config.LoadConfig(config.GetDefaultFile())
+
 	InitDB()
-	err := upload.AWSInit()
-	if err != nil {
-		panic(err)
-	}
+	upload.AWSInit(Config.AWS_AccessKey, Config.AWS_SecretKey)
 
 	router := httprouter.New()
 	router.GET("/", Index)
@@ -25,7 +28,8 @@ func main() {
 	router.POST("/make_images", MakeImageHandler)
 	router.POST("/upload", Upload)
 
-	http.ListenAndServe(":8080", router)
+	log.Printf("Started webserver on port %s", Config.HttpPort)
+	http.ListenAndServe(Config.HttpPort, router)
 }
 
 func Index(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
